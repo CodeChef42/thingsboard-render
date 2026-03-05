@@ -1,0 +1,25 @@
+services:
+  - type: pgsql
+    name: tb-postgres
+    plan: free
+
+  - type: web
+    name: thingsboard
+    env: docker
+    repo: https://github.com/CodeChef42/thingsboard-render
+    dockerCommand: |
+      docker run -d \
+        --name tb \
+        -p 8080:8080 \
+        -p 1883:1883 \
+        -e TB_DATABASE_URL="jdbc:postgresql://tb-postgres:5432/thingsboard" \
+        -e TB_DATABASE_USERNAME=postgres \
+        -e TB_DATABASE_PASSWORD=${POSTGRES_PASSWORD} \
+        --link tb-postgres:postgres \
+        thingsboard/tb-postgres:latest
+    envVars:
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: tb-postgres
+          property: password
+    plan: free
