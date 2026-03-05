@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: tb-postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: thingsboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - tb-postgres-data:/var/lib/postgresql/data
+
+  thingsboard:
+    image: thingsboard/tb-postgres:latest
+    container_name: tb
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8081:9090"
+      - "1884:1883"
+      - "7071:7070"
+    environment:
+      TB_QUEUE_TYPE: in-memory
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thingsboard
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    volumes:
+      - tb-logs:/var/log/thingsboard
+
+volumes:
+  tb-postgres-data:
+  tb-logs:
